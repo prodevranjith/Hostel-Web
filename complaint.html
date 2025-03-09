@@ -89,35 +89,84 @@
     </div>
     <!-- <script src="./complaint.js"></script> -->
     <script>
-        document.getElementById("complaintForm").addEventListener("submit", async function (event) {
-            event.preventDefault();
-            const hosteliteId = document.getElementById("hosteliteId").value;
-            const response1 = await fetch("backend/data.json");
-            const hostelites = await response1.json();
-            const isValid = hostelites.some(h => h.id === hosteliteId);
+        // Replace this in your complaint.html file
+document.getElementById("complaintForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const hosteliteId = document.getElementById("hosteliteId").value;
+    const response1 = await fetch("backend/data.json");  // This won't work on Vercel
+    const hostelites = await response1.json();
+    const isValid = hostelites.some(h => h.id === hosteliteId);
 
-            if (!isValid) {
-                alert("Invalid Hostelite ID!");
-                return;
-            }
+    if (!isValid) {
+        alert("Invalid Hostelite ID!");
+        return;
+    }
 
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const phone = document.getElementById("phone").value;
+    const message = document.getElementById("body").value;
 
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const phone = document.getElementById("phone").value;
-            const message = document.getElementById("body").value;
+    const BACKEND_URL = "https://hostel-web-two.vercel.app/";  // Remove this hardcoded URL
+    const response = await fetch(`${BACKEND_URL}/send-message`, {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, message }),
+    });
 
-            const BACKEND_URL = "https://hostel-web-two.vercel.app/";
-            const response = await fetch(`${BACKEND_URL}/send-message`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, phone, message }),
-            });
+    // Rest of your code
+});
 
-            const result = await response.json();
-            alert(result.message);
-            window.location.href = "Index.html"
+// With this updated code
+document.getElementById("complaintForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const hosteliteId = document.getElementById("hosteliteId").value;
+    
+    try {
+        // Use the API endpoint instead of trying to access the JSON file directly
+        const response1 = await fetch("/data");
+        if (!response1.ok) {
+            throw new Error("Could not fetch hostelite data");
+        }
+        
+        const hostelites = await response1.json();
+        const isValid = hostelites.some(h => h.id === hosteliteId);
+
+        if (!isValid) {
+            alert("Invalid Hostelite ID!");
+            return;
+        }
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const message = document.getElementById("body").value;
+
+        // Use relative URL - this works regardless of deployment domain
+        const response = await fetch("/send-message", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, message }),
         });
+
+        if (!response.ok) {
+            throw new Error("Failed to send message");
+        }
+
+        const result = await response.json();
+        alert(result.message);
+        window.location.href = "Index.html";
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+    }
+    const result = await response.json();
+    alert(result.message);
+    window.location.href = "Index.html"
+});
+
+           
+        
     </script>
 
     <!-- Include Bootstrap JS -->
