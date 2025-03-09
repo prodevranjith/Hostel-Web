@@ -56,7 +56,8 @@
         <form id="complaintForm">
             <div class="mb-3">
                 <label for="hosteliteId" class="form-label">Hostelite ID:</label>
-                <input type="text" id="hosteliteId" class="form-control" required>
+                <input type="text" id="hosteliteId" class="form-control" pattern="hst\d{4}" 
+                       title="Hostelite ID should be in format 'hst1001'" required>
             </div>
 
             <div class="mb-3">
@@ -89,47 +90,51 @@
     </div>
     <!-- <script src="./complaint.js"></script> -->
     <script>
-        // Replace this in your complaint.html file
-document.getElementById("complaintForm").addEventListener("submit", async function (event) {
-    event.preventDefault();
-    const hosteliteId = document.getElementById("hosteliteId").value;
-    const response1 = await fetch("backend/data.json");  // This won't work on Vercel
-    const hostelites = await response1.json();
-    const isValid = hostelites.some(h => h.id === hosteliteId);
-
-    if (!isValid) {
-        alert("Invalid Hostelite ID!");
-        return;
-    }
-
-    const name = document.getElementById("name").value;
-    const email = document.getElementById("email").value;
-    const phone = document.getElementById("phone").value;
-    const message = document.getElementById("body").value;
-
-    const BACKEND_URL = "https://hostel-web-two.vercel.app/";  // Remove this hardcoded URL
-    const response = await fetch(`${BACKEND_URL}/send-message`, {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, message }),
-    });
-
+        function formatHosteliteId(input) {
+            // If it's just a number, format it with the prefix
+            if (/^\d+$/.test(input)) {
+                return "hst" + input.padStart(4, '0');
+            }
+            // If it already has the prefix, ensure the correct format
+            else if (input.startsWith("hst")) {
+                const numPart = input.substring(3);
+                if (/^\d+$/.test(numPart)) {
+                    return "hst" + numPart.padStart(4, '0');
+                }
+            }
+            return input; // Return as is if not matching expected patterns
+        }
+        
+        // Then in your event listener:
+        let hosteliteId = formatHosteliteId(document.getElementById("hosteliteId").value);
     // Rest of your code
-});
 
 // With this updated code
 document.getElementById("complaintForm").addEventListener("submit", async function (event) {
     event.preventDefault();
-    const hosteliteId = document.getElementById("hosteliteId").value;
+    let hosteliteId = document.getElementById("hosteliteId").value;
+    
+    // Format check - ensure ID has the right format
+    if (!hosteliteId.startsWith("hst")) {
+        // If user entered just the number, add the prefix
+        if (!isNaN(hosteliteId) && hosteliteId.trim() !== "") {
+            hosteliteId = "hst" + hosteliteId.padStart(4, '0');
+        } else {
+            alert("Invalid Hostelite ID format! IDs should be in format 'hst1001'");
+            return;
+        }
+    }
     
     try {
-        // Use the API endpoint instead of trying to access the JSON file directly
+        // Fetch the list of valid hostelite IDs
         const response1 = await fetch("/data");
         if (!response1.ok) {
             throw new Error("Could not fetch hostelite data");
         }
         
         const hostelites = await response1.json();
+        
+        // Check if the ID exists in our data
         const isValid = hostelites.some(h => h.id === hosteliteId);
 
         if (!isValid) {
@@ -137,12 +142,12 @@ document.getElementById("complaintForm").addEventListener("submit", async functi
             return;
         }
 
+        // Proceed with form submission if ID is valid
         const name = document.getElementById("name").value;
         const email = document.getElementById("email").value;
         const phone = document.getElementById("phone").value;
         const message = document.getElementById("body").value;
 
-        // Use relative URL - this works regardless of deployment domain
         const response = await fetch("/send-message", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
