@@ -110,6 +110,7 @@
     // Rest of your code
 
 // With this updated code
+
 document.getElementById("complaintForm").addEventListener("submit", async function (event) {
     event.preventDefault();
     let hosteliteId = document.getElementById("hosteliteId").value;
@@ -120,7 +121,7 @@ document.getElementById("complaintForm").addEventListener("submit", async functi
         if (!isNaN(hosteliteId) && hosteliteId.trim() !== "") {
             hosteliteId = "hst" + hosteliteId.padStart(4, '0');
         } else {
-            alert("Invalid Hostelite ID format! IDs should be in format 'hst1001'");
+            alert("Invalid Hostelite ID format!");
             return;
         }
     }
@@ -133,6 +134,8 @@ document.getElementById("complaintForm").addEventListener("submit", async functi
         }
         
         const hostelites = await response1.json();
+        console.log("Fetched hostelites:", hostelites); // Debug
+        console.log("Looking for ID:", hosteliteId); // Debug
         
         // Check if the ID exists in our data
         const isValid = hostelites.some(h => h.id === hosteliteId);
@@ -151,7 +154,13 @@ document.getElementById("complaintForm").addEventListener("submit", async functi
         const response = await fetch("/send-message", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, message }),
+            body: JSON.stringify({ 
+                hosteliteId, // Important! Include the hosteliteId in your submission
+                name, 
+                email, 
+                phone, 
+                message 
+            }),
         });
 
         if (!response.ok) {
@@ -165,13 +174,12 @@ document.getElementById("complaintForm").addEventListener("submit", async functi
         console.error("Error:", error);
         alert("An error occurred: " + error.message);
     }
-    const result = await response.json();
-    alert(result.message);
-    window.location.href = "Index.html"
-});
-
-           
-        
+    // Remove the duplicate code here
+     
+const result = await response.json();
+alert(result.message);
+window.location.href = "Index.html"
+});  
     </script>
 
     <!-- Include Bootstrap JS -->
