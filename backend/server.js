@@ -116,9 +116,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); 
 
 const app = express();
-const DATA_FILE = process.env.NODE_ENV === 'production' 
-    ? '/tmp/data.json'  // For production (Vercel)
-    : './data.json';    // For development (root directory of the project)
+const DATA_FILE = "https://hostel-web-two.vercel.app/data.json";
 
 app.use(bodyParser.urlencoded({ extended: true })); 
 if (process.env.NODE_ENV === 'production') {
