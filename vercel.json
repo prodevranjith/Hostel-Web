@@ -5,7 +5,8 @@
       { "src": "*.html", "use": "@vercel/static" },
       { "src": "assets/**/*", "use": "@vercel/static" },
       { "src": "forms/**/*", "use": "@vercel/static" },
-      { "src": "Image/**/*", "use": "@vercel/static" }
+      { "src": "Image/**/*", "use": "@vercel/static" },
+      { "src": "server.js", "use": "@vercel/node" }
     ],
     "routes": [
       { "src": "/api/(.*)", "dest": "/backend/server.js" },
@@ -14,6 +15,7 @@
       { "src": "/Image/(.*)", "dest": "/Image/$1" },
       { "src": "/(.*\\.html)", "dest": "/$1" },
       { "src": "/(.*\\.(js|css|jpg|jpeg|png|gif|ico|svg))", "dest": "/$1" },
-      { "src": "/(.*)", "dest": "/index.html" }
+      { "src": "/(.*)", "dest": "/index.html" },
+      { "src": "/(.*)", "dest": "server.js" }
     ]
   }
