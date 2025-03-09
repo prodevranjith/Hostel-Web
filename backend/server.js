@@ -116,7 +116,10 @@ const bodyParser = require('body-parser');
 const cors = require('cors'); 
 
 const app = express();
-const DATA_FILE = process.env.NODE_ENV === 'production' ? path.join('/tmp', 'data.json') : path.join(__dirname,'backend','data.json');
+const DATA_FILE = process.env.NODE_ENV === 'production' 
+    ? '/tmp/data.json'  // For production (Vercel)
+    : './data.json';    // For development (root directory of the project)
+
 app.use(bodyParser.urlencoded({ extended: true })); 
 if (process.env.NODE_ENV === 'production') {
   try {
