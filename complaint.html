@@ -47,19 +47,12 @@
             margin-bottom: 20px;
         }
     </style>
-    <!-- <script src="script.js" defer></script> -->
 </head>
 
 <body>
     <div class="container">
         <h2>Complaint Form</h2>
         <form id="complaintForm">
-            <div class="mb-3">
-                <label for="hosteliteId" class="form-label">Hostelite ID:</label>
-                <input type="text" id="hosteliteId" class="form-control" pattern="hst\d{4}" 
-                       title="Hostelite ID should be in format 'hst1001'" required>
-            </div>
-
             <div class="mb-3">
                 <label for="name" class="form-label">Name:</label>
                 <input type="text" id="name" class="form-control" required>
@@ -75,11 +68,6 @@
                 <input type="text" id="phone" class="form-control" required>
             </div>
 
-            <!-- <div class="mb-3">
-                <label for="subject" class="form-label">Subject:</label>
-                <input type="text" id="subject" class="form-control" required>
-            </div> -->
-
             <div class="mb-3">
                 <label for="body" class="form-label">Complaint:</label>
                 <textarea id="body" class="form-control" rows="4" required></textarea>
@@ -88,98 +76,40 @@
             <button type="submit" class="btn">Send Mail</button>
         </form>
     </div>
-    <!-- <script src="./complaint.js"></script> -->
+
     <script>
-        function formatHosteliteId(input) {
-            // If it's just a number, format it with the prefix
-            if (/^\d+$/.test(input)) {
-                return "hst" + input.padStart(4, '0');
-            }
-            // If it already has the prefix, ensure the correct format
-            else if (input.startsWith("hst")) {
-                const numPart = input.substring(3);
-                if (/^\d+$/.test(numPart)) {
-                    return "hst" + numPart.padStart(4, '0');
+        document.getElementById("complaintForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const message = document.getElementById("body").value;
+
+            try {
+                const response = await fetch("/send-message", {
+                    method: "POST",
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        phone,
+                        message
+                    }),
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    alert(result.message);
+                    window.location.href = "Index.html";  // Redirect after submission
+                } else {
+                    alert(result.message);
                 }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("An error occurred: " + error.message);
             }
-            return input; // Return as is if not matching expected patterns
-        }
-        
-        // Then in your event listener:
-        let hosteliteId = formatHosteliteId(document.getElementById("hosteliteId").value);
-    // Rest of your code
-
-// With this updated code
-
-document.getElementById("complaintForm").addEventListener("submit", async function (event) {
-    event.preventDefault();
-    let hosteliteId = document.getElementById("hosteliteId").value;
-    
-    // Format check - ensure ID has the right format
-    if (!hosteliteId.startsWith("hst")) {
-        // If user entered just the number, add the prefix
-        if (!isNaN(hosteliteId) && hosteliteId.trim() !== "") {
-            hosteliteId = "hst" + hosteliteId.padStart(4, '0');
-        } else {
-            alert("Invalid Hostelite ID format!");
-            return;
-        }
-    }
-    
-    try {
-        // Fetch the list of valid hostelite IDs
-        const response1 = await fetch("/data");
-        if (!response1.ok) {
-            throw new Error("Could not fetch hostelite data");
-        }
-        
-        const hostelites = await response1.json();
-        console.log("Fetched hostelites:", hostelites); // Debug
-        console.log("Looking for ID:", hosteliteId); // Debug
-        
-        // Check if the ID exists in our data
-        const isValid = hostelites.some(h => h.id === hosteliteId);
-
-        if (!isValid) {
-            alert("Invalid Hostelite ID!");
-            return;
-        }
-
-        // Proceed with form submission if ID is valid
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const phone = document.getElementById("phone").value;
-        const message = document.getElementById("body").value;
-
-        const response = await fetch("/send-message", {
-            method: "POST",
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                hosteliteId, // Important! Include the hosteliteId in your submission
-                name, 
-                email, 
-                phone, 
-                message 
-            }),
         });
-
-        if (!response.ok) {
-            throw new Error("Failed to send message");
-        }
-
-        const result = await response.json();
-        alert(result.message);
-        window.location.href = "Index.html";
-    } catch (error) {
-        console.error("Error:", error);
-        alert("An error occurred: " + error.message);
-    }
-    // Remove the duplicate code here
-     
-const result = await response.json();
-alert(result.message);
-window.location.href = "Index.html"
-});  
     </script>
 
     <!-- Include Bootstrap JS -->

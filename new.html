@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostel Complaint Page</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="./Image/Gemini_Generated_Image_hsl3qahsl3qahsl3.jpg" rel="icon">
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+    <style>
+        body {
+            background-color: white;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .form-control {
+            border-radius: 0.5rem;
+        }
+
+        button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0.5rem;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #218838;
+            cursor: pointer;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+    <!-- <script src="script.js" defer></script> -->
+</head>
+
+<body>
+    <div class="container">
+        <h2>Complaint Form</h2>
+        <form id="complaintForm">
+            <div class="mb-3">
+                <label for="hosteliteId" class="form-label">Hostelite ID:</label>
+                <input type="text" id="hosteliteId" class="form-control" pattern="hst\d{4}" 
+                       title="Hostelite ID should be in format 'hst1001'" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" id="name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number:</label>
+                <input type="text" id="phone" class="form-control" required>
+            </div>
+
+            <!-- <div class="mb-3">
+                <label for="subject" class="form-label">Subject:</label>
+                <input type="text" id="subject" class="form-control" required>
+            </div> -->
+
+            <div class="mb-3">
+                <label for="body" class="form-label">Complaint:</label>
+                <textarea id="body" class="form-control" rows="4" required></textarea>
+            </div>
+
+            <button type="submit" class="btn">Send Mail</button>
+        </form>
+    </div>
+    <!-- <script src="./complaint.js"></script> -->
+    <script>
+        function formatHosteliteId(input) {
+            // If it's just a number, format it with the prefix
+            if (/^\d+$/.test(input)) {
+                return "hst" + input.padStart(4, '0');
+            }
+            // If it already has the prefix, ensure the correct format
+            else if (input.startsWith("hst")) {
+                const numPart = input.substring(3);
+                if (/^\d+$/.test(numPart)) {
+                    return "hst" + numPart.padStart(4, '0');
+                }
+            }
+            return input; // Return as is if not matching expected patterns
+        }
+        
+        // Then in your event listener:
+        let hosteliteId = formatHosteliteId(document.getElementById("hosteliteId").value);
+    // Rest of your code
+
+// With this updated code
+
+document.getElementById("complaintForm").addEventListener("submit", async function (event) {
+    event.preventDefault();
+    let hosteliteId = document.getElementById("hosteliteId").value;
+    
+    // Format check - ensure ID has the right format
+    if (!hosteliteId.startsWith("hst")) {
+        // If user entered just the number, add the prefix
+        if (!isNaN(hosteliteId) && hosteliteId.trim() !== "") {
+            hosteliteId = "hst" + hosteliteId.padStart(4, '0');
+        } else {
+            alert("Invalid Hostelite ID format!");
+            return;
+        }
+    }
+    
+    try {
+        // Fetch the list of valid hostelite IDs
+        const response1 = await fetch("/data");
+        if (!response1.ok) {
+            throw new Error("Could not fetch hostelite data");
+        }
+        
+        const hostelites = await response1.json();
+        console.log("Fetched hostelites:", hostelites); // Debug
+        console.log("Looking for ID:", hosteliteId); // Debug
+        
+        // Check if the ID exists in our data
+        const isValid = hostelites.some(h => h.id === hosteliteId);
+
+        if (!isValid) {
+            alert("Invalid Hostelite ID!");
+            return;
+        }
+
+        // Proceed with form submission if ID is valid
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const phone = document.getElementById("phone").value;
+        const message = document.getElementById("body").value;
+
+        const response = await fetch("/send-message", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                hosteliteId, // Important! Include the hosteliteId in your submission
+                name, 
+                email, 
+                phone, 
+                message 
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to send message");
+        }
+
+        const result = await response.json();
+        alert(result.message);
+        window.location.href = "Index.html";
+    } catch (error) {
+        console.error("Error:", error);
+        alert("An error occurred: " + error.message);
+    }
+    // Remove the duplicate code here
+     
+const result = await response.json();
+alert(result.message);
+window.location.href = "Index.html"
+});  
+    </script>
+
+    <!-- Include Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
