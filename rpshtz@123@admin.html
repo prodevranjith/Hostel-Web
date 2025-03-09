@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -100,6 +100,242 @@
         });
 
         fetchData();
+    </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage JSON Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom green theme */
+        .green-theme .btn-success {
+            background-color: #218838; /* Darker green for buttons */
+            border-color: #1e7e34;
+        }
+        .green-theme .btn-success:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+        #data-list li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+        #status-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body class="green-theme">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Manage JSON Data</h1>
+        
+        <div id="status-message"></div>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Current Data</h5>
+            </div>
+            <div class="card-body">
+                <ul id="data-list" class="list-unstyled mb-0"></ul>
+                <div id="loading-indicator" class="text-center my-3">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="empty-message" class="text-center text-muted py-3" style="display: none;">
+                    No data available. Add some entries below.
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Add New Entry</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="add-form">
+                            <div class="mb-3">
+                                <label for="id" class="form-label">ID:</label>
+                                <input type="number" id="id" name="id" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Name:</label>
+                                <input type="text" id="name" name="name" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">Add Entry</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Delete Entry</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="delete-form">
+                            <div class="mb-3">
+                                <label for="delete-id" class="form-label">ID to Delete:</label>
+                                <input type="number" id="delete-id" name="delete-id" class="form-control" required>
+                            </div>
+                            <button type="submit" class="btn btn-danger">Delete Entry</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show status message
+        function showMessage(message, isError = false) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = message;
+            statusEl.className = isError ? 'error' : 'success';
+            statusEl.style.display = 'block';
+            
+            // Auto hide after 3 seconds
+            setTimeout(() => {
+                statusEl.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Fetch and display data
+        async function fetchData() {
+            const dataList = document.getElementById('data-list');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const emptyMessage = document.getElementById('empty-message');
+            
+            loadingIndicator.style.display = 'block';
+            dataList.innerHTML = '';
+            emptyMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:3000/data');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    emptyMessage.style.display = 'block';
+                } else {
+                    dataList.innerHTML = data.map(item => 
+                        `<li>
+                            <span><strong>ID:</strong> ${item.id}, <strong>Name:</strong> ${item.name}</span>
+                            <button class="delete-btn" data-id="${item.id}">×</button>
+                        </li>`
+                    ).join('');
+                    
+                    // Add event listeners to delete buttons
+                    document.querySelectorAll('.delete-btn').forEach(button => {
+                        button.addEventListener('click', async () => {
+                            const id = button.getAttribute('data-id');
+                            await deleteItem(id);
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showMessage('Failed to load data: ' + error.message, true);
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        }
+
+        // Add new item
+        async function addItem(id, name) {
+            try {
+                const response = await fetch('http://localhost:3000/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(id), name })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to add data');
+                }
+                
+                showMessage('Entry added successfully');
+                document.getElementById('add-form').reset();
+                await fetchData();
+            } catch (error) {
+                console.error('Error adding data:', error);
+                showMessage(error.message, true);
+            }
+        }
+
+        // Delete item
+        async function deleteItem(id) {
+            try {
+                const response = await fetch(`http://localhost:3000/delete/${id}`, { 
+                    method: 'DELETE' 
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to delete data');
+                }
+                
+                showMessage('Entry deleted successfully');
+                document.getElementById('delete-form').reset();
+                await fetchData();
+            } catch (error) {
+                console.error('Error deleting data:', error);
+                showMessage(error.message, true);
+            }
+        }
+
+        // Form event listeners
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('id').value;
+            const name = document.getElementById('name').value;
+            await addItem(id, name);
+        });
+
+        document.getElementById('delete-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('delete-id').value;
+            await deleteItem(id);
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 </body>
 </html>
