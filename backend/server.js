@@ -123,7 +123,7 @@ app.use(cors()); // Enable CORS
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/rpshtz@123@admin.html'));
+    res.sendFile(path.join(__dirname, '../rpshtz@123@admin.html'));
 });
 
 // Serve static files (if needed for CSS, JS, etc.)

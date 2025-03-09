@@ -107,7 +107,8 @@
             const phone = document.getElementById("phone").value;
             const message = document.getElementById("body").value;
 
-            const response = await fetch("http://localhost:3000/send-message", {
+            const BACKEND_URL = "https://hostel-web-two.vercel.app/";
+            const response = await fetch(`${BACKEND_URL}/send-message`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name, email, phone, message }),
