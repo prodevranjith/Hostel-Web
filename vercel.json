@@ -2,7 +2,7 @@
     "version": 2,
     "builds": [
       { "src": "backend/server.js", "use": "@vercel/node" },
-      { "src": "index.html", "use": "@vercel/static" },
+      { "src": "*.html", "use": "@vercel/static" },
       { "src": "assets/**/*", "use": "@vercel/static" },
       { "src": "forms/**/*", "use": "@vercel/static" },
       { "src": "Image/**/*", "use": "@vercel/static" }
@@ -12,7 +12,8 @@
       { "src": "/assets/(.*)", "dest": "/assets/$1" },
       { "src": "/forms/(.*)", "dest": "/forms/$1" },
       { "src": "/Image/(.*)", "dest": "/Image/$1" },
-      { "src": "/(.*\\.(js|css|jpg|jpeg|png|gif|ico|html|svg))", "dest": "/$1" },
+      { "src": "/(.*\\.html)", "dest": "/$1" },
+      { "src": "/(.*\\.(js|css|jpg|jpeg|png|gif|ico|svg))", "dest": "/$1" },
       { "src": "/(.*)", "dest": "/index.html" }
     ]
   }
