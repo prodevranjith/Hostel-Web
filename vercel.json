@@ -8,7 +8,10 @@
       { "src": "image/**/*", "use": "@vercel/static" }
     ],
     "routes": [
-      { "src": "/(.*)", "dest": "/index.html" }
+      { "src": "/(.*)", "dest": "/index.html" },
+      { "src": "/assets/(.*)", "dest": "/assets/$1" },
+      { "src": "/forms/(.*)", "dest": "/forms/$1" },
+      { "src": "/image/(.*)", "dest": "/image/$1" }
     ]
   }
   
